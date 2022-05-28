@@ -9,8 +9,11 @@ authors = ["Etienne Napoleone <etienne@setten.io>"]
 
 [dependencies]
 thiserror = "1.0"
-ureq = "2.4"
 
 [dependencies.clap]
 features = ["derive", "env"]
 version = "3.1"
+
+[dependencies.ureq]
+features = ["json"]
+version = "2.4"
