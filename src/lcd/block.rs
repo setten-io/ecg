@@ -1,7 +1,9 @@
 use self::response::BlockResponse;
 
-use crate::checkable::Checkable;
+use crate::check::Check;
 use crate::error::EcgResult;
+
+static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
 
 #[derive(Debug, Clone)]
 pub struct Block {
@@ -23,10 +25,10 @@ impl Block {
     }
 }
 
-impl Checkable for Block {
+impl Check for Block {
     fn check(&mut self, http: &ureq::Agent) -> EcgResult<bool> {
         let block = http
-            .get("google.com")
+            .get(&format!("https://phoenix-lcd.terra.dev{}", PATH))
             .call()?
             .into_json::<BlockResponse>()?;
         Ok(self.height_increased(block))

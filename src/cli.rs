@@ -17,6 +17,6 @@ pub struct Args {
     pub heartbeat_url: String,
 
     /// Beat interval in seconds
-    #[clap(short, long, default_value_t = 1, env = "BEAT_INTERVAL")]
+    #[clap(short, long, default_value_t = 10, env = "BEAT_INTERVAL")]
     pub beat_interval: u64,
 }
