@@ -5,15 +5,9 @@ use crate::error::Result;
 
 static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Block {
     last_height: Option<u64>,
-}
-
-impl Default for Block {
-    fn default() -> Self {
-        Self { last_height: None }
-    }
 }
 
 impl Block {
