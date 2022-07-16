@@ -6,12 +6,12 @@ use crate::error::Result;
 static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
 
 #[derive(Debug, Default, Clone)]
-pub struct Block {
+pub(crate) struct Block {
     last_height: Option<u64>,
 }
 
 impl Block {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
@@ -48,18 +48,18 @@ mod response {
     use serde_aux::field_attributes::deserialize_number_from_string;
 
     #[derive(Serialize, Deserialize)]
-    pub struct BlockResponse {
-        pub block: Block,
+    pub(crate) struct BlockResponse {
+        pub(crate) block: Block,
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct Block {
-        pub header: Header,
+    pub(crate) struct Block {
+        pub(crate) header: Header,
     }
 
     #[derive(Serialize, Deserialize)]
-    pub struct Header {
+    pub(crate) struct Header {
         #[serde(deserialize_with = "deserialize_number_from_string")]
-        pub height: u64,
+        pub(crate) height: u64,
     }
 }

@@ -1,1 +1,1 @@
-pub mod block;
+pub(crate) mod block;

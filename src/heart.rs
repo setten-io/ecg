@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::checkable::Checkable;
 
-pub struct Heart {
+pub(crate) struct Heart {
     agent: ureq::Agent,
     interval: Duration,
     lcd_url: String,
@@ -13,7 +13,7 @@ pub struct Heart {
 }
 
 impl Heart {
-    pub fn new(
+    pub(crate) fn new(
         agent: ureq::Agent,
         interval: u64,
         lcd_url: String,
@@ -29,7 +29,7 @@ impl Heart {
         }
     }
 
-    pub fn start(&mut self) -> ! {
+    pub(crate) fn start(&mut self) -> ! {
         log::info!("warming up");
         self.check();
         loop {
