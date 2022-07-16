@@ -44,7 +44,7 @@ impl Heart {
                 }
             }
             self.agent.get(&self.heartbeat_url);
-            println!("beat {}", res);
+            log::info!("beat {}", res);
             sleep(self.interval);
         }
     }
