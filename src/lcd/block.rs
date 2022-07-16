@@ -1,7 +1,7 @@
 use self::response::BlockResponse;
 
 use crate::checkable::Checkable;
-use crate::error::Result;
+use crate::error::{EcgError, Result};
 
 static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
 
@@ -35,11 +35,13 @@ impl Block {
 
 impl Checkable for Block {
     fn check(&mut self, http: &ureq::Agent, url: &str) -> Result<bool> {
-        let block = http
-            .get(&format!("{}{}", url, PATH))
-            .call()?
-            .into_json::<BlockResponse>()?;
-        Ok(self.height_increased(block))
+        match http.get(&format!("{}{}", url, PATH)).call() {
+            Ok(res) => match res.into_json::<BlockResponse>() {
+                Ok(block) => Ok(self.height_increased(block)),
+                Err(e) => Err(EcgError::Lcd(e.to_string())),
+            },
+            Err(e) => Err(EcgError::Lcd(e.to_string())),
+        }
     }
 }
 
