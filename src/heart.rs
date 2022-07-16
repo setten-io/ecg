@@ -5,14 +5,21 @@ use crate::checkable::Checkable;
 pub struct Heart {
     agent: ureq::Agent,
     interval: Duration,
+    lcd_url: String,
     checkables: Vec<Box<dyn Checkable>>,
 }
 
 impl Heart {
-    pub fn new(agent: ureq::Agent, interval: u64, checkables: Vec<Box<dyn Checkable>>) -> Self {
+    pub fn new(
+        agent: ureq::Agent,
+        interval: u64,
+        lcd_url: String,
+        checkables: Vec<Box<dyn Checkable>>,
+    ) -> Self {
         Self {
             agent,
             interval: Duration::from_secs(interval),
+            lcd_url,
             checkables,
         }
     }
@@ -21,7 +28,7 @@ impl Heart {
         loop {
             let mut res = true;
             for checkable in &mut self.checkables {
-                match checkable.check(&self.agent) {
+                match checkable.check(&self.agent, &self.lcd_url) {
                     Err(e) => {
                         println!("error: {}", e);
                         res = false;

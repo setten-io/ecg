@@ -40,9 +40,9 @@ impl Block {
 }
 
 impl Checkable for Block {
-    fn check(&mut self, http: &ureq::Agent) -> Result<bool> {
+    fn check(&mut self, http: &ureq::Agent, url: &str) -> Result<bool> {
         let block = http
-            .get(&format!("https://phoenix-lcd.terra.dev{}", PATH))
+            .get(&format!("{}{}", url, PATH))
             .call()?
             .into_json::<BlockResponse>()?;
         Ok(self.height_increased(block))
