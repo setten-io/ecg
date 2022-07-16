@@ -7,21 +7,36 @@ static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
 
 #[derive(Debug, Clone)]
 pub struct Block {
-    last_height: u64,
+    last_height: Option<u64>,
+}
+
+impl Default for Block {
+    fn default() -> Self {
+        Self { last_height: None }
+    }
 }
 
 impl Block {
     pub fn new() -> Self {
-        Self { last_height: 0 }
+        Self::default()
     }
 
     fn height_increased(&mut self, block: BlockResponse) -> bool {
         let height = block.block.header.height;
-        if height > self.last_height {
-            self.last_height = height;
+        dbg!(height, self.last_height);
+        match self.last_height {
+            Some(last_height) => {
+                if height > last_height {
+                    self.last_height = Some(height);
                     return true;
                 }
                 false
+            }
+            None => {
+                self.last_height = Some(height);
+                false
+            }
+        }
     }
 }
 
