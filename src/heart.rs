@@ -1,4 +1,6 @@
-use std::{thread::sleep, time::Duration};
+use std::convert::identity;
+use std::thread::sleep;
+use std::time::Duration;
 
 use crate::checkable::Checkable;
 
@@ -29,33 +31,36 @@ impl Heart {
 
     pub fn start(&mut self) -> ! {
         log::info!("warming up");
-        self.checkables.iter_mut().for_each(|c| {
-            log::debug!("warming");
-            c.check(&self.agent, &self.lcd_url).unwrap();
-        });
-        sleep(self.interval);
+        self.check();
         loop {
-            let mut res = true;
-            for checkable in &mut self.checkables {
-                match checkable.check(&self.agent, &self.lcd_url) {
-                    Err(e) => {
-                        log::error!("{}", e);
-                        res = false;
-                    }
-                    Ok(check_res) => {
-                        if !check_res {
-                            res = false
-                        }
-                    }
-                }
-            }
-            if res {
-                match self.agent.get(&self.heartbeat_url).call() {
-                    Ok(_) => log::info!("beat"),
-                    Err(e) => log::error!("couldn't beat, {}", e),
-                }
-            }
             sleep(self.interval);
+            let result = self.check();
+            self.beat(result);
+        }
+    }
+
+    fn check(&mut self) -> bool {
+        let mut results =
+            self.checkables
+                .iter_mut()
+                .map(|c| match c.check(&self.agent, &self.lcd_url) {
+                    Ok(res) => res,
+                    Err(e) => {
+                        log::warn!("{}", e);
+                        false
+                    }
+                });
+        results.all(identity)
+    }
+
+    fn beat(&self, check_result: bool) {
+        if check_result {
+            match self.agent.get(&self.heartbeat_url).call() {
+                Ok(_) => log::info!("beat"),
+                Err(e) => log::error!("couldn't beat, {}", e),
+            }
+        } else {
+            log::info!("not beating");
         }
     }
 }
