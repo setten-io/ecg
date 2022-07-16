@@ -23,7 +23,6 @@ impl Block {
 
     fn height_increased(&mut self, block: BlockResponse) -> bool {
         let height = block.block.header.height;
-        dbg!(height, self.last_height);
         match self.last_height {
             Some(last_height) => {
                 if height > last_height {
