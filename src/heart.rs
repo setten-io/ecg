@@ -6,6 +6,7 @@ pub struct Heart {
     agent: ureq::Agent,
     interval: Duration,
     lcd_url: String,
+    heartbeat_url: String,
     checkables: Vec<Box<dyn Checkable>>,
 }
 
@@ -14,12 +15,14 @@ impl Heart {
         agent: ureq::Agent,
         interval: u64,
         lcd_url: String,
+        heartbeat_url: String,
         checkables: Vec<Box<dyn Checkable>>,
     ) -> Self {
         Self {
             agent,
             interval: Duration::from_secs(interval),
             lcd_url,
+            heartbeat_url,
             checkables,
         }
     }
@@ -40,6 +43,7 @@ impl Heart {
                     }
                 }
             }
+            self.agent.get(&self.heartbeat_url);
             println!("beat {}", res);
             sleep(self.interval);
         }
