@@ -1,5 +1,5 @@
 use crate::error::Result;
 
-pub trait Checker {
+pub trait Checkable {
     fn check(&mut self, http: &ureq::Agent) -> Result<bool>;
 }

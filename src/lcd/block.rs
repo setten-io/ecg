@@ -1,6 +1,6 @@
 use self::response::BlockResponse;
 
-use crate::checker::Checker;
+use crate::checkable::Checkable;
 use crate::error::Result;
 
 static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
@@ -19,13 +19,13 @@ impl Block {
         let height = block.block.header.height;
         if height > self.last_height {
             self.last_height = height;
-            return true;
-        }
-        false
+                    return true;
+                }
+                false
     }
 }
 
-impl Checker for Block {
+impl Checkable for Block {
     fn check(&mut self, http: &ureq::Agent) -> Result<bool> {
         let block = http
             .get(&format!("https://phoenix-lcd.terra.dev{}", PATH))
