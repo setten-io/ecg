@@ -1,6 +1,6 @@
 use self::response::BlockResponse;
 
-use crate::check::Check;
+use crate::checker::Checker;
 use crate::error::EcgResult;
 
 static PATH: &str = "/cosmos/base/tendermint/v1beta1/blocks/latest";
@@ -25,7 +25,7 @@ impl Block {
     }
 }
 
-impl Check for Block {
+impl Checker for Block {
     fn check(&mut self, http: &ureq::Agent) -> EcgResult<bool> {
         let block = http
             .get(&format!("https://phoenix-lcd.terra.dev{}", PATH))
