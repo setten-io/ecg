@@ -55,9 +55,10 @@ impl Heart {
 
     fn beat(&self, check_result: bool) {
         if check_result {
-            match self.agent.get(&self.heartbeat_url).call() {
-                Ok(_) => log::info!("beat"),
-                Err(e) => log::error!("couldn't beat, {}", e),
+            if let Err(e) = self.agent.get(&self.heartbeat_url).call() {
+                log::error!("couldn't beat, {}", e);
+            } else {
+                log::info!("beat")
             }
         } else {
             log::info!("not beating");
