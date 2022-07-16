@@ -1,3 +1,4 @@
+use std::env;
 use std::time::Duration;
 
 use clap::Parser;
@@ -28,9 +29,12 @@ fn main() {
 }
 
 fn init_logging() {
-    if std::env::var("ECG_LOG").is_err() {
-        std::env::set_var("ECG_LOG", "info");
+    match (std::env::var("ECG_LOG"), std::env::var("RUST_LOG")) {
+        (Ok(_), Ok(_)) => (),
+        (Ok(level), Err(_)) => env::set_var("RUST_LOG", format!("ecg={}", level)),
+        (Err(_), Ok(_)) => (),
+        (Err(_), Err(_)) => env::set_var("RUST_LOG", format!("ecg=info")),
     }
-    pretty_env_logger::init_custom_env("ECG_LOG");
+    pretty_env_logger::init();
     log::debug!(target: "logging", "level: {}", log::max_level())
 }
