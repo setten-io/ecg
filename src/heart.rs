@@ -27,13 +27,19 @@ impl Heart {
         }
     }
 
-    pub fn start(&mut self) {
+    pub fn start(&mut self) -> ! {
+        log::info!("warming up");
+        self.checkables.iter_mut().for_each(|c| {
+            log::debug!("warming");
+            c.check(&self.agent, &self.lcd_url).unwrap();
+        });
+        sleep(self.interval);
         loop {
             let mut res = true;
             for checkable in &mut self.checkables {
                 match checkable.check(&self.agent, &self.lcd_url) {
                     Err(e) => {
-                        println!("error: {}", e);
+                        log::error!("{}", e);
                         res = false;
                     }
                     Ok(check_res) => {
@@ -43,8 +49,12 @@ impl Heart {
                     }
                 }
             }
-            self.agent.get(&self.heartbeat_url);
-            log::info!("beat {}", res);
+            if res {
+                match self.agent.get(&self.heartbeat_url).call() {
+                    Ok(_) => log::info!("beat"),
+                    Err(e) => log::error!("couldn't beat, {}", e),
+                }
+            }
             sleep(self.interval);
         }
     }
