@@ -1,5 +1,5 @@
-use crate::error::EcgResult;
+use crate::error::Result;
 
 pub trait Checker {
-    fn check(&mut self, http: &ureq::Agent) -> EcgResult<bool>;
+    fn check(&mut self, http: &ureq::Agent) -> Result<bool>;
 }

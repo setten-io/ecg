@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-pub type EcgResult<T> = Result<T, EcgError>;
+pub type Result<T> = std::result::Result<T, EcgError>;
 
 #[derive(Error, Debug)]
 pub enum EcgError {
