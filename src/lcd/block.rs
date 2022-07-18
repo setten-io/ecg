@@ -23,6 +23,7 @@ impl Block {
                     self.last_height = Some(height);
                     return true;
                 }
+                log::warn!("height didn't increase");
                 false
             }
             None => {
