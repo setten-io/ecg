@@ -35,7 +35,7 @@ impl Block {
 }
 
 impl Checkable for Block {
-    fn check(&mut self, http: &ureq::Agent, url: &str) -> Result<bool> {
+    fn check(&mut self, http: &ureq::Agent, url: &str, _: &str) -> Result<bool> {
         match http.get(&format!("{}{}", url, PATH)).call() {
             Ok(res) => match res.into_json::<BlockResponse>() {
                 Ok(block) => Ok(self.height_increased(block)),

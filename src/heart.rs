@@ -9,6 +9,7 @@ pub(crate) struct Heart {
     interval: Duration,
     lcd_url: String,
     heartbeat_url: String,
+    valcons_addr: String,
     checkables: Vec<Box<dyn Checkable>>,
 }
 
@@ -18,6 +19,7 @@ impl Heart {
         interval: u64,
         lcd_url: String,
         heartbeat_url: String,
+        valcons_addr: String,
         checkables: Vec<Box<dyn Checkable>>,
     ) -> Self {
         Self {
@@ -25,6 +27,7 @@ impl Heart {
             interval: Duration::from_secs(interval),
             lcd_url,
             heartbeat_url,
+            valcons_addr,
             checkables,
         }
     }
@@ -40,16 +43,15 @@ impl Heart {
     }
 
     fn check(&mut self) -> bool {
-        let mut results =
-            self.checkables
-                .iter_mut()
-                .map(|c| match c.check(&self.agent, &self.lcd_url) {
-                    Ok(res) => res,
-                    Err(e) => {
-                        log::warn!("{}", e);
-                        false
-                    }
-                });
+        let mut results = self.checkables.iter_mut().map(|c| {
+            match c.check(&self.agent, &self.lcd_url, &self.valcons_addr) {
+                Ok(res) => res,
+                Err(e) => {
+                    log::warn!("{}", e);
+                    false
+                }
+            }
+        });
         results.all(identity)
     }
 
