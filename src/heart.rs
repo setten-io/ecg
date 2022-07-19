@@ -52,12 +52,14 @@ impl Heart {
             Ok(state) => state,
             Err(_) => return false,
         };
-        let results: Vec<bool> = self
-            .electrodes
+        self.electrodes
             .iter_mut()
             .map(|e| e.measure(state.clone()))
-            .collect();
-        results.into_iter().all(identity)
+            // needed to ensure ALL "measures" are run
+            // `all` stopes consuming at the first `false`
+            .collect::<Vec<bool>>()
+            .into_iter()
+            .all(identity)
     }
 
     fn beat(&self) {
