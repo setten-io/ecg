@@ -17,6 +17,6 @@ pub(crate) struct Args {
     pub(crate) heartbeat_url: String,
 
     /// Beat interval in seconds
-    #[clap(short, long, default_value_t = 10, env = "BEAT_INTERVAL")]
-    pub(crate) beat_interval: u64,
+    #[clap(short, long, default_value_t = 10, env = "INTERVAL")]
+    pub(crate) interval: u64,
 }

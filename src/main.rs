@@ -23,13 +23,7 @@ fn main() {
         Box::new(electrode::MissedBlocks::default()),
     ];
     let lcd = lcd::Client::new(agent.clone(), args.lcd_url, args.valcons_addr);
-    let mut heart = heart::Heart::new(
-        lcd,
-        agent,
-        args.heartbeat_url,
-        electrodes,
-        args.beat_interval,
-    );
+    let mut heart = heart::Heart::new(lcd, agent, args.heartbeat_url, electrodes, args.interval);
     heart.start()
 }
 
