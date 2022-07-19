@@ -3,8 +3,8 @@ use std::time::Duration;
 
 use clap::Parser;
 
-mod checkable;
 mod cli;
+mod electrode;
 mod error;
 mod heart;
 mod lcd;
@@ -17,17 +17,18 @@ fn main() {
         .timeout_read(Duration::from_secs(2))
         .timeout_write(Duration::from_secs(2))
         .build();
-    let checkables: Vec<Box<dyn checkable::Checkable>> = vec![
-        Box::new(lcd::block::Block::new()),
-        Box::new(lcd::signing_infos::SigningInfos::new()),
+    let electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
+        Box::new(electrode::BlockHeight::default()),
+        Box::new(electrode::Tombstoned::default()),
+        Box::new(electrode::MissedBlocks::default()),
     ];
+    let lcd = lcd::Client::new(agent.clone(), args.lcd_url, args.valcons_addr);
     let mut heart = heart::Heart::new(
+        lcd,
         agent,
-        args.beat_interval,
-        args.lcd_url,
         args.heartbeat_url,
-        args.valcons_addr,
-        checkables,
+        electrodes,
+        args.beat_interval,
     );
     heart.start()
 }

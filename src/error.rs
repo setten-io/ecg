@@ -1,11 +1,11 @@
 use thiserror::Error;
 
-pub(crate) type Result<T> = std::result::Result<T, EcgError>;
+pub(crate) type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Error, Debug)]
-pub(crate) enum EcgError {
-    #[error("io error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("couldn't query LCD: {0}")]
-    Lcd(String),
+pub(crate) enum Error {
+    #[error("deserialization failed: {0}")]
+    Deserialization(#[from] std::io::Error),
+    #[error("http request failed: {0}")]
+    Http(#[from] ureq::Error),
 }
