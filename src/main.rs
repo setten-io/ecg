@@ -11,6 +11,7 @@ mod lcd;
 
 fn main() {
     init_logging();
+    init_signal_handler();
     log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
     let args = cli::Args::parse();
     let agent = ureq::AgentBuilder::new()
@@ -36,4 +37,13 @@ fn init_logging() {
     }
     pretty_env_logger::init();
     log::debug!("logging level set to {}", log::max_level())
+}
+
+fn init_signal_handler() {
+    log::debug!("signal handler set");
+    ctrlc::set_handler(|| {
+        log::info!("bye!");
+        std::process::exit(0);
+    })
+    .expect("error setting signal handler");
 }
