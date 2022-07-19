@@ -34,8 +34,9 @@ impl Heart {
 
     pub(crate) fn start(&mut self) -> ! {
         log::info!("warming up");
-        self.check();
+        let _ = self.check();
         loop {
+            log::debug!("sleeping {:?}", self.interval);
             sleep(self.interval);
             let result = self.check();
             self.beat(result);
@@ -43,16 +44,20 @@ impl Heart {
     }
 
     fn check(&mut self) -> bool {
-        let mut results = self.checkables.iter_mut().map(|c| {
+        log::debug!("running all checks");
+        let mut results: Vec<bool> = Vec::new();
+        self.checkables.iter_mut().for_each(|c| {
             match c.check(&self.agent, &self.lcd_url, &self.valcons_addr) {
-                Ok(res) => res,
+                Ok(res) => results.push(res),
                 Err(e) => {
                     log::warn!("{}", e);
-                    false
+                    results.push(false)
                 }
-            }
+            };
         });
-        results.all(identity)
+        let result = results.into_iter().all(identity);
+        log::debug!("checks passed: {}", result);
+        result
     }
 
     fn beat(&self, check_result: bool) {

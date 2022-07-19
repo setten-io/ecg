@@ -37,8 +37,8 @@ fn init_logging() {
         (Ok(_), Ok(_)) => (),
         (Ok(level), Err(_)) => env::set_var("RUST_LOG", format!("ecg={}", level)),
         (Err(_), Ok(_)) => (),
-        (Err(_), Err(_)) => env::set_var("RUST_LOG", format!("ecg=info")),
+        (Err(_), Err(_)) => env::set_var("RUST_LOG", "ecg=info"),
     }
     pretty_env_logger::init();
-    log::debug!(target: "logging", "level: {}", log::max_level())
+    log::debug!("logging level set to {}", log::max_level())
 }
