@@ -17,10 +17,10 @@
 > Ecg and heartbeat style monitoring are complementary to other monitoring tools and methods.
 > We recommend ecg as an aditional failsafe.
 
-Ecg is made to work with a [heartbeat](https://betterstack.com/community/guides/monitoring/what-is-cron-monitoring/) (or "cron") style monitoring. Available on SaaS platforms like (Better Uptime)[https://betteruptime.com] or [Dead Man's Snitch](https://deadmanssnitch.com).
+Ecg is made to work with a [heartbeat](https://betterstack.com/community/guides/monitoring/what-is-cron-monitoring/) (or "cron") style monitoring. Available on SaaS platforms like [Better Uptime](https://betteruptime.com) or [Dead Man's Snitch](https://deadmanssnitch.com).
 
 In short, it works like a dead man switch.
-As long as the heartbeat monitor is receiving requests from ecg at a predifined interval, alerting will not be triggered.
+As long as the heartbeat monitor is receiving requests from ecg at a predefined interval, alerting will not be triggered.
 It makes this kind of monitoring resilient to failures that might otherwise prevent you from receiving any alert:
 
 - Your whole infra loses connectivity
