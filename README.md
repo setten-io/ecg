@@ -4,8 +4,8 @@
 
 [![Integration](https://github.com/setten-io/ecg/actions/workflows/integration.yaml/badge.svg)](https://github.com/setten-io/ecg/actions/workflows/integration.yaml)
 [![Delivery](https://github.com/setten-io/ecg/actions/workflows/delivery.yaml/badge.svg)](https://github.com/setten-io/ecg/actions/workflows/delivery.yaml)
-![Crates.io](https://img.shields.io/crates/v/ecg)
-![GitHub](https://img.shields.io/github/license/setten-io/ecg)
+[![Crate](https://img.shields.io/crates/v/ecg)](https://crates.io/crates/ecg)
+[![License](https://img.shields.io/github/license/setten-io/ecg)](https://github.com/setten-io/ecg/blob/main/LICENSE)
 
 `ecg` is a cosmos validator heartbeat monitoring tool.
 
