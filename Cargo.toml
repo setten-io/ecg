@@ -23,7 +23,7 @@ version = "3.1"
 
 [dependencies.ureq]
 features = ["json"]
-version = "2.4"
+version = "2.5"
 
 [dependencies.ctrlc]
 features = ["termination"]
