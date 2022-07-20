@@ -19,7 +19,7 @@ This tool is installable as a crate.
 cargo install ecg
 ```
 
-Or as a Docker image.
+Or available as a Docker image.
 
 ```bash
 docker pull ghcr.io/setten-io/ecg:$VERSION
@@ -27,7 +27,7 @@ docker pull ghcr.io/setten-io/ecg:$VERSION
 
 ## Usage
 
-Ecg is made to work with a [heartbeat](](https://betterstack.com/community/guides/monitoring/what-is-cron-monitoring/)) (or "cron") monitor available on services like betteruptime.
+Ecg is made to work with a [heartbeat](https://betterstack.com/community/guides/monitoring/what-is-cron-monitoring/) (or "cron") monitor available on services like betteruptime.
 
 In short, it works like a dead man switch.
 As long as ecg is able to send a request to the monitor at a regular interval, alerting will not be triggered.
@@ -45,6 +45,14 @@ Some example failures that might not get you notified:
 > Monitoring is essential, ecg and heartbeat type monitoring are complementary to other tools and methods.
 >
 > They should be used together in conjuction.
+
+### Checks
+
+Ecg will not send heartbeat if, since last checked:
+
+- block height didn't increase
+- validator block misses increased
+- validator is tombstoned
 
 ### Configuration
 
