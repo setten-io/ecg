@@ -1,6 +1,6 @@
 use ureq::Agent;
 
-use crate::error::Result;
+use crate::error::LcdResult;
 
 pub(crate) mod response;
 
@@ -26,20 +26,20 @@ impl Client {
         }
     }
 
-    pub(crate) fn fetch(&self) -> Result<State> {
+    pub(crate) fn fetch(&self) -> LcdResult<State> {
         Ok(State {
             block: self.fetch_block()?,
             signing_infos: self.fetch_signing_infos()?,
         })
     }
 
-    fn fetch_block(&self) -> Result<response::Block> {
+    fn fetch_block(&self) -> LcdResult<response::Block> {
         let url = format!("{}/cosmos/base/tendermint/v1beta1/blocks/latest", self.url);
         let res = self.http.get(&url).call()?;
         Ok(res.into_json::<response::Block>()?)
     }
 
-    fn fetch_signing_infos(&self) -> Result<response::SigningInfos> {
+    fn fetch_signing_infos(&self) -> LcdResult<response::SigningInfos> {
         let url = format!(
             "{}/cosmos/slashing/v1beta1/signing_infos/{}",
             self.url, self.valcons_addr

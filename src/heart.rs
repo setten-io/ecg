@@ -50,7 +50,10 @@ impl Heart {
         log::debug!("running all checks");
         let state = match self.lcd.fetch() {
             Ok(state) => state,
-            Err(_) => return false,
+            Err(e) => {
+                log::error!("{}", e);
+                return false;
+            }
         };
         self.electrodes
             .iter_mut()
