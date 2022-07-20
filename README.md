@@ -57,7 +57,7 @@ Ecg will not send heartbeat if, since last checked:
 ### Configuration
 
 ```md
-ecg 0.1.0
+ecg
 Heartbeats for cosmos validators
 
 USAGE:
