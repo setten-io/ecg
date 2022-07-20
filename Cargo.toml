@@ -1,11 +1,16 @@
 [package]
-edition = "2021"
 name = "ecg"
+description = "Heartbeats for cosmos validators"
 version = "0.1.0"
-
+edition = "2021"
 authors = ["Etienne Napoleone <etienne@setten.io>"]
+license = "GPL-3.0-or-later"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+documentation = "https://github.com/setten-io/ecg/blob/main/README.md"
+readme = "README.md"
+repository = "https://github.com/setten-io/ecg"
+keywords = ["monitoring", "validator", "cosmos", "heartbeat", "uptime"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 thiserror = "1.0"
