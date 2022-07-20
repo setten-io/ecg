@@ -10,10 +10,10 @@ mod heart;
 mod lcd;
 
 fn main() {
+    let args = cli::Args::parse();
     init_logging();
     init_signal_handler();
     log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
-    let args = cli::Args::parse();
     let agent = ureq::AgentBuilder::new()
         .timeout_read(Duration::from_secs(2))
         .timeout_write(Duration::from_secs(2))
