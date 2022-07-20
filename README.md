@@ -11,6 +11,29 @@
 
 ---
 
+> **Warning**
+>
+> Monitoring is essential.
+> Ecg and heartbeat style monitoring are complementary to other monitoring tools and methods.
+> We recommend ecg as an aditional failsafe.
+
+Ecg is made to work with a [heartbeat](https://betterstack.com/community/guides/monitoring/what-is-cron-monitoring/) (or "cron") style monitoring. Available on SaaS platforms like (Better Uptime)[https://betteruptime.com] or [Dead Man's Snitch](https://deadmanssnitch.com).
+
+In short, it works like a dead man switch.
+As long as the heartbeat monitor is receiving requests from ecg at a predifined interval, alerting will not be triggered.
+It makes this kind of monitoring resilient to failures that might otherwise prevent you from receiving any alert:
+
+- Your whole infra loses connectivity
+- Monitoring services is down at the same time as the validator
+- Monitoring service can't access the validator
+- Monitoring service lose access to its data source (ie: LCD)
+
+Currently ecg will send heartbeat if all those conditions are met:
+
+- block height increased
+- validator block misses didn't increase
+- validator isn't tombstoned
+
 ## Getting Started
 
 This tool is installable as a crate.
@@ -22,39 +45,10 @@ cargo install ecg
 Or available as a Docker image.
 
 ```bash
-docker pull ghcr.io/setten-io/ecg:$VERSION
+docker pull ghcr.io/setten-io/ecg
 ```
 
 ## Usage
-
-Ecg is made to work with a [heartbeat](https://betterstack.com/community/guides/monitoring/what-is-cron-monitoring/) (or "cron") monitor available on services like betteruptime.
-
-In short, it works like a dead man switch.
-As long as ecg is able to send a request to the monitor at a regular interval, alerting will not be triggered.
-The default state being alerting, you will get notified in many edge scenarios where traditional monitoring would fail.
-
-Some example failures that might not get you notified:
-
-- Your whole infra loses connectivity
-- Monitoring services is down at the same time as the validator
-- Monitoring service can't access the validator
-- Monitoring service lose access to its data source (ie: LCD)
-
-> **Warning**
->
-> Monitoring is essential, ecg and heartbeat type monitoring are complementary to other tools and methods.
->
-> They should be used together in conjuction.
-
-### Checks
-
-Ecg will not send heartbeat if, since last checked:
-
-- block height didn't increase
-- validator block misses increased
-- validator is tombstoned
-
-### Configuration
 
 ```md
 ecg
@@ -76,31 +70,38 @@ OPTIONS:
 
 It is possible to change ecg logging level through the `ECG_LOG` env var, or for all/any module through the `RUST_LOG` env var.
 
-### Running
+### Examples
 
-Example with the binary.
+With the binary.
 
 ```bash
 # configured through arguments
-ecg terravalcons1abcdef1234567890 https://phoenix-lcd.terra.dev https://your-heartbeat-monitor-url.com
+ecg \
+  terravalcons1abcdef1234567890 \
+  https://phoenix-lcd.terra.dev \
+  https://your-heartbeat-monitor-url.com
+
 # with debug logging and custom interval
-ECG_LOG=debug ecg --interval 20 terravalcons1abcdef1234567890 https://phoenix-lcd.terra.dev https://your-heartbeat-monitor-url.com
+export ECG_LOG=debug
+ecg \
+  terravalcons1abcdef1234567890 \
+  https://phoenix-lcd.terra.dev \
+  https://your-heartbeat-monitor-url.com \
+  --interval 20
 
-# or
-
-# configured through env
+# or configured through environment
 export VALCONS_ADDR="terravalcons1abcdef1234567890"
 export LCD_URL="https://phoenix-lcd.terra.dev"
 export HEARTBEAT_URL="https://your-heartbeat-monitor-url.com"
 ecg
 ```
 
-Example via docker.
+With the docker image.
 
 ```bash
 docker run \
   -e VALCONS_ADDR="terravalcons1abcdef1234567890" \
   -e LCD_URL="https://phoenix-lcd.terra.dev" \
   -e HEARTBEAT_URL="https://your-heartbeat-monitor-url.com" \
-  ghcr.io/setten-io/ecg:$VERSION
+  ghcr.io/setten-io/ecg
 ```
