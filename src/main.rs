@@ -4,6 +4,7 @@ use std::time::Duration;
 use clap::Parser;
 
 mod cli;
+mod config;
 mod electrode;
 mod error;
 mod heart;
