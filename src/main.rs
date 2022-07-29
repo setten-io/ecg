@@ -5,9 +5,9 @@ use std::time::Duration;
 use clap::Parser;
 
 mod cli;
-mod config;
-// mod electrode;
 mod client;
+mod config;
+mod electrode;
 mod error;
 // mod heart;
 
@@ -39,11 +39,12 @@ async fn main() {
         }
     };
 
-    // let electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
-    //     Box::new(electrode::BlockHeight::default()),
-    //     Box::new(electrode::Tombstoned::default()),
-    //     Box::new(electrode::MissedBlocks::default()),
-    // ];
+    let _electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
+        Box::new(electrode::BlockHeight::default()),
+        Box::new(electrode::Tombstoned::default()),
+        Box::new(electrode::MissedBlocks::default()),
+    ];
+
     // let lcd = lcd::Client::new(agent.clone(), args.lcd_url, args.valcons_addr);
     // let mut heart = heart::Heart::new(lcd, agent, args.heartbeat_url, electrodes, args.interval);
     // heart.start()
