@@ -10,6 +10,7 @@ pub(crate) struct Config {
 #[derive(Deserialize)]
 pub(crate) struct TargetConfig {
     pub(crate) url: String,
+    pub(crate) valcons_address: String,
     pub(crate) interval: u64,
     pub(crate) clients: Vec<ClientsConfig>,
 }
@@ -41,6 +42,7 @@ mod tests {
             targets:
               phoenix-validator:
                 url: https://betteruptime.com/something
+                valcons_address: terravalcons1234567890
                 interval: 30
                 clients:
                   - type: lcd
@@ -52,6 +54,7 @@ mod tests {
                     blockchain: terra
               kaiyo-validator:
                 url: https://betteruptime.com/something
+                valcons_address: kujivalcons1234567890
                 interval: 30
                 clients:
                   - type: lcd
