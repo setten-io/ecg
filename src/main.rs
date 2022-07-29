@@ -12,9 +12,20 @@ mod lcd;
 
 fn main() {
     let args = cli::Args::parse();
+
     init_logging();
     init_signal_handler();
+
+    let _config = match config::load("./ecg.yaml".into()) {
+        Ok(config) => config,
+        Err(e) => {
+            log::error!("couldn't load config: {}", e);
+            std::process::exit(1)
+        }
+    };
+
     log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
+
     let agent = ureq::AgentBuilder::new()
         .timeout_read(Duration::from_secs(2))
         .timeout_write(Duration::from_secs(2))
