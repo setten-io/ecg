@@ -28,10 +28,17 @@ async fn main() {
 
     log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
 
-    // let agent = ureq::AgentBuilder::new()
-    //     .timeout_read(Duration::from_secs(2))
-    //     .timeout_write(Duration::from_secs(2))
-    //     .build();
+    let _http = match reqwest::Client::builder()
+        .timeout(Duration::from_secs(2))
+        .build()
+    {
+        Ok(http) => http,
+        Err(e) => {
+            log::error!("couldn't build http client: {}", e);
+            std::process::exit(1)
+        }
+    };
+
     // let electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
     //     Box::new(electrode::BlockHeight::default()),
     //     Box::new(electrode::Tombstoned::default()),
