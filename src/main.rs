@@ -6,12 +6,13 @@ use clap::Parser;
 
 mod cli;
 mod config;
-mod electrode;
+// mod electrode;
 mod error;
-mod heart;
-mod lcd;
+// mod heart;
+// mod lcd;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = cli::Args::parse();
 
     init_logging();
