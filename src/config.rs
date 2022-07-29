@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::error::ConfigResult;
 
-pub(crate) fn load(path: PathBuf) -> ConfigResult<Config> {
+pub(crate) fn load(path: &PathBuf) -> ConfigResult<Config> {
     let file = std::fs::read_to_string(path)?;
     Ok(serde_yaml::from_str(&file)?)
 }
