@@ -7,9 +7,9 @@ use clap::Parser;
 mod cli;
 mod config;
 // mod electrode;
+mod client;
 mod error;
 // mod heart;
-// mod lcd;
 
 #[tokio::main]
 async fn main() {
