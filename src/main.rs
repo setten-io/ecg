@@ -2,13 +2,13 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::{
-    client::{lcd::Lcd, Client},
-    config::TargetConfig,
-    heart::Heart,
-};
 use clap::Parser;
 use futures::future;
+
+use crate::client::lcd::Lcd;
+use crate::client::Client;
+use crate::config::TargetConfig;
+use crate::heart::Heart;
 
 mod cli;
 mod client;
