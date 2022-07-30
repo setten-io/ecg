@@ -3,6 +3,14 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use clap::Parser;
+use futures::future;
+use tokio::task::JoinHandle;
+
+use crate::{
+    client::{lcd::Lcd, Client},
+    config::TargetConfig,
+    heart::Heart,
+};
 
 mod cli;
 mod client;
@@ -26,8 +34,6 @@ async fn main() {
         }
     };
 
-    log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
-
     let http = match reqwest::Client::builder()
         .timeout(Duration::from_secs(2))
         .build()
@@ -39,11 +45,29 @@ async fn main() {
         }
     };
 
-    let client = client::lcd::Lcd::new(
-        http.clone(),
-        "https://phoenix-lcd.terra.dev".into(),
-        "terravalcons1hn7u8qf5z8lyufjlzr93lvtel0dp3z4z3h95da".into(),
-    );
+    log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
+
+    let handlers: Vec<_> = config
+        .targets
+        .into_iter()
+        .map(|(name, target)| start_heart(name, target, http))
+        .collect();
+    future::join_all(handlers).await;
+}
+
+fn start_heart(_: String, target: TargetConfig, http: reqwest::Client) -> JoinHandle<()> {
+    let clients: Vec<Box<dyn Client>> = target
+        .clients
+        .into_iter()
+        .map(|client_config| {
+            let client: Box<dyn Client> = match client_config {
+                config::ClientsConfig::Lcd { url } => {
+                    Box::new(Lcd::new(http, url, target.valcons_address.clone()))
+                }
+            };
+            client
+        })
+        .collect();
 
     let electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
         Box::new(electrode::BlockHeight::default()),
@@ -51,33 +75,14 @@ async fn main() {
         Box::new(electrode::MissedBlocks::default()),
     ];
 
-    config.targets.iter().for_each(|(n, c)| {
-        let clients = c.clients.iter().map(|client_config| match client_config {
-            config::ClientsConfig::Lcd { url } => {
-                client::lcd::Lcd::new(http.clone(), url.to_string(), c.valcons_address.clone())
-            }
-            _ => todo!(),
-        });
-        let heart = heart::Heart::new(
-            Box::new(clients.take(1).collect::<Vec<dyn client::Client>>()),
-            http.clone(),
-            c.url,
-            electrodes,
-            c.interval,
-        );
-        tokio::task::spawn(async {
-            // perform some work here...
-        });
-    });
-
-    let mut heart = heart::Heart::new(
-        Box::new(client),
+    let mut heart = Heart::new(
+        clients,
         http,
-        "https://google.com".into(),
+        target.url.clone(),
         electrodes,
-        10,
+        target.interval,
     );
-    heart.start().await
+    tokio::task::spawn(async move { heart.start().await })
 }
 
 fn init_logging() {

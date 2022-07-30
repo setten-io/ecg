@@ -26,15 +26,13 @@ pub(crate) struct TargetConfig {
 #[derive(Deserialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub(crate) enum ClientsConfig {
-    Lcd {
-        url: String,
-    },
-    SettenLcd {
-        project_id: String,
-        key: String,
-        network: String,
-        blockchain: String,
-    },
+    Lcd { url: String },
+    // SettenLcd {
+    //     project_id: String,
+    //     key: String,
+    //     network: String,
+    //     blockchain: String,
+    // },
 }
 
 #[cfg(test)]
@@ -55,11 +53,11 @@ mod tests {
                 clients:
                   - type: lcd
                     url: https://phoenix-lcd.terra.dev
-                  - type: setten-lcd
-                    project_id: ea08855653b64998bb47b2c03bf66de7
-                    key: 02215b36969446c28b22059e63b4301b
-                    network: phoenix
-                    blockchain: terra
+                  # - type: setten-lcd
+                  #   project_id: ea08855653b64998bb47b2c03bf66de7
+                  #   key: 02215b36969446c28b22059e63b4301b
+                  #   network: phoenix
+                  #   blockchain: terra
               kaiyo-validator:
                 url: https://betteruptime.com/something
                 valcons_address: kujivalcons1234567890
