@@ -7,7 +7,7 @@ pub(crate) mod lcd;
 #[derive(Clone)]
 pub(crate) struct ClientState {
     pub(crate) height: u64,
-    pub(crate) jailed: String,
+    pub(crate) _jailed: String,
     pub(crate) tombstoned: bool,
     pub(crate) missed_blocks: u64,
 }

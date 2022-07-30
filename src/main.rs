@@ -2,15 +2,13 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use clap::Parser;
-use futures::future;
-use tokio::task::JoinHandle;
-
 use crate::{
     client::{lcd::Lcd, Client},
     config::TargetConfig,
     heart::Heart,
 };
+use clap::Parser;
+use futures::future;
 
 mod cli;
 mod client;
@@ -47,22 +45,22 @@ async fn main() {
 
     log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
 
-    let handlers: Vec<_> = config
+    let mut hearts: Vec<_> = config
         .targets
         .into_iter()
-        .map(|(name, target)| start_heart(name, target, http))
+        .map(|(name, target)| start_heart(name, target, http.clone()))
         .collect();
-    future::join_all(handlers).await;
+    future::join_all(hearts.iter_mut().map(|h| h.start())).await;
 }
 
-fn start_heart(_: String, target: TargetConfig, http: reqwest::Client) -> JoinHandle<()> {
+fn start_heart(_: String, target: TargetConfig, http: reqwest::Client) -> Heart {
     let clients: Vec<Box<dyn Client>> = target
         .clients
         .into_iter()
         .map(|client_config| {
             let client: Box<dyn Client> = match client_config {
                 config::ClientsConfig::Lcd { url } => {
-                    Box::new(Lcd::new(http, url, target.valcons_address.clone()))
+                    Box::new(Lcd::new(http.clone(), url, target.valcons_address.clone()))
                 }
             };
             client
@@ -75,14 +73,13 @@ fn start_heart(_: String, target: TargetConfig, http: reqwest::Client) -> JoinHa
         Box::new(electrode::MissedBlocks::default()),
     ];
 
-    let mut heart = Heart::new(
+    Heart::new(
         clients,
-        http,
+        http.clone(),
         target.url.clone(),
         electrodes,
         target.interval,
-    );
-    tokio::task::spawn(async move { heart.start().await })
+    )
 }
 
 fn init_logging() {

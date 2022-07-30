@@ -44,7 +44,7 @@ impl Electrode for BlockHeight {
 pub(crate) struct Tombstoned {}
 
 impl Electrode for Tombstoned {
-    fn warm_up(&mut self, state: &ClientState) {
+    fn warm_up(&mut self, _: &ClientState) {
         log::debug!("warmed up tombstoned (nothing to do)");
     }
 

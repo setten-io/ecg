@@ -39,9 +39,10 @@ impl Client for Lcd {
     async fn fetch(&self) -> ClientResult<ClientState> {
         let block = self.fetch_block().await?;
         let signing_infos = self.fetch_signing_infos().await?;
+        log::debug!("fetched state for {} at {}", self.valcons_addr, self.url);
         Ok(ClientState {
             height: block.block.header.height,
-            jailed: signing_infos.val_signing_info.jailed_until,
+            _jailed: signing_infos.val_signing_info.jailed_until,
             tombstoned: signing_infos.val_signing_info.tombstoned,
             missed_blocks: signing_infos.val_signing_info.missed_blocks_counter,
         })
