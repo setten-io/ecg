@@ -7,6 +7,7 @@ use crate::client::{Client, ClientState};
 use crate::electrode::Electrode;
 
 pub(crate) struct Heart {
+    name: String,
     clients: Vec<Box<dyn Client>>,
     http: reqwest::Client,
     heartbeat_url: String,
@@ -16,6 +17,7 @@ pub(crate) struct Heart {
 
 impl Heart {
     pub(crate) fn new(
+        name: String,
         clients: Vec<Box<dyn Client>>,
         http: reqwest::Client,
         heartbeat_url: String,
@@ -23,6 +25,7 @@ impl Heart {
         interval: u64,
     ) -> Self {
         Self {
+            name,
             clients,
             http,
             interval: Duration::from_secs(interval),
@@ -32,18 +35,18 @@ impl Heart {
     }
 
     pub(crate) async fn start(&mut self) {
-        log::info!("warming up");
+        log::info!("[{}] warming up", self.name);
         self.warm_up().await;
         loop {
-            log::debug!("sleeping {:?}", self.interval);
+            log::debug!("[{}] sleeping {:?}", self.name, self.interval);
             sleep(self.interval).await;
             let result = self.check().await;
             if result {
-                log::info!("beating");
+                log::info!("[{}] beating", self.name);
                 self.beat().await;
                 continue;
             }
-            log::warn!("not beating");
+            log::warn!("[{}] not beating", self.name);
         }
     }
 
@@ -51,7 +54,7 @@ impl Heart {
         let state = match self.fresh_state().await {
             Some(state) => state,
             None => {
-                log::error!("no state to warm up on");
+                log::error!("[{}] no state to warm up on", self.name);
                 std::process::exit(1)
             }
         };
@@ -65,12 +68,12 @@ impl Heart {
         let state = match self.fresh_state().await {
             Some(state) => state,
             None => {
-                log::error!("no state found");
+                log::error!("[{}] no state found", self.name);
                 return false;
             }
         };
 
-        log::debug!("running all checks");
+        log::debug!("[{}] running all checks", self.name);
         stream::iter(&mut self.electrodes)
             .map(|e| e.measure(&state))
             .collect::<Vec<bool>>()
@@ -85,7 +88,7 @@ impl Heart {
         let states: Vec<ClientState> = match future::try_join_all(states_futures).await {
             Ok(states) => states,
             Err(e) => {
-                log::error!("{}", e);
+                log::error!("[{}] {}", self.name, e);
                 std::process::exit(1);
             }
         };
@@ -95,7 +98,7 @@ impl Heart {
 
     async fn beat(&self) {
         if let Err(e) = self.http.get(&self.heartbeat_url).send().await {
-            log::error!("couldn't beat: {}", e);
+            log::error!("[{}] couldn't beat: {}", self.name, e);
         }
     }
 }

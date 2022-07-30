@@ -53,7 +53,7 @@ async fn main() {
     future::join_all(hearts.iter_mut().map(|h| h.start())).await;
 }
 
-fn start_heart(_: String, target: TargetConfig, http: reqwest::Client) -> Heart {
+fn start_heart(name: String, target: TargetConfig, http: reqwest::Client) -> Heart {
     let clients: Vec<Box<dyn Client>> = target
         .clients
         .into_iter()
@@ -74,6 +74,7 @@ fn start_heart(_: String, target: TargetConfig, http: reqwest::Client) -> Heart 
     ];
 
     Heart::new(
+        name,
         clients,
         http.clone(),
         target.url.clone(),
