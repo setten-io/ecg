@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
 use super::{Client, ClientState};
-use crate::error::LcdResult;
+use crate::error::ClientResult;
 
 pub(crate) struct Lcd {
     http: reqwest::Client,
@@ -18,13 +18,13 @@ impl Lcd {
         }
     }
 
-    async fn fetch_block(&self) -> LcdResult<response::Block> {
+    async fn fetch_block(&self) -> ClientResult<response::Block> {
         let url = format!("{}/cosmos/base/tendermint/v1beta1/blocks/latest", self.url);
         let res = self.http.get(&url).send().await?;
         Ok(res.json::<response::Block>().await?)
     }
 
-    async fn fetch_signing_infos(&self) -> LcdResult<response::SigningInfos> {
+    async fn fetch_signing_infos(&self) -> ClientResult<response::SigningInfos> {
         let url = format!(
             "{}/cosmos/slashing/v1beta1/signing_infos/{}",
             self.url, self.valcons_addr
@@ -36,7 +36,7 @@ impl Lcd {
 
 #[async_trait]
 impl Client for Lcd {
-    async fn fetch(&self) -> LcdResult<ClientState> {
+    async fn fetch(&self) -> ClientResult<ClientState> {
         let block = self.fetch_block().await?;
         let signing_infos = self.fetch_signing_infos().await?;
         Ok(ClientState {

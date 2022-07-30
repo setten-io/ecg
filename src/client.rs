@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::error::LcdResult;
+use crate::error::ClientResult;
 
 pub(crate) mod lcd;
 
@@ -14,5 +14,5 @@ pub(crate) struct ClientState {
 
 #[async_trait]
 pub(crate) trait Client {
-    async fn fetch(&self) -> LcdResult<ClientState>;
+    async fn fetch(&self) -> ClientResult<ClientState>;
 }

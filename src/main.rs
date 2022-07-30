@@ -9,7 +9,7 @@ mod client;
 mod config;
 mod electrode;
 mod error;
-// mod heart;
+mod heart;
 
 #[tokio::main]
 async fn main() {
@@ -18,7 +18,7 @@ async fn main() {
     init_logging();
     init_signal_handler();
 
-    let _config = match config::load(&PathBuf::from(args.path)) {
+    let config = match config::load(&PathBuf::from(args.path)) {
         Ok(config) => config,
         Err(e) => {
             log::error!("{}", e);
@@ -28,7 +28,7 @@ async fn main() {
 
     log::info!("starting v{}", env!("CARGO_PKG_VERSION"));
 
-    let _http = match reqwest::Client::builder()
+    let http = match reqwest::Client::builder()
         .timeout(Duration::from_secs(2))
         .build()
     {
@@ -39,15 +39,45 @@ async fn main() {
         }
     };
 
-    let _electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
+    let client = client::lcd::Lcd::new(
+        http.clone(),
+        "https://phoenix-lcd.terra.dev".into(),
+        "terravalcons1hn7u8qf5z8lyufjlzr93lvtel0dp3z4z3h95da".into(),
+    );
+
+    let electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
         Box::new(electrode::BlockHeight::default()),
         Box::new(electrode::Tombstoned::default()),
         Box::new(electrode::MissedBlocks::default()),
     ];
 
-    // let lcd = lcd::Client::new(agent.clone(), args.lcd_url, args.valcons_addr);
-    // let mut heart = heart::Heart::new(lcd, agent, args.heartbeat_url, electrodes, args.interval);
-    // heart.start()
+    config.targets.iter().for_each(|(n, c)| {
+        let clients = c.clients.iter().map(|client_config| match client_config {
+            config::ClientsConfig::Lcd { url } => {
+                client::lcd::Lcd::new(http.clone(), url.to_string(), c.valcons_address.clone())
+            }
+            _ => todo!(),
+        });
+        let heart = heart::Heart::new(
+            Box::new(clients.take(1).collect::<Vec<dyn client::Client>>()),
+            http.clone(),
+            c.url,
+            electrodes,
+            c.interval,
+        );
+        tokio::task::spawn(async {
+            // perform some work here...
+        });
+    });
+
+    let mut heart = heart::Heart::new(
+        Box::new(client),
+        http,
+        "https://google.com".into(),
+        electrodes,
+        10,
+    );
+    heart.start().await
 }
 
 fn init_logging() {
