@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+
 use crate::client::ClientState;
 
 pub(crate) trait Electrode {
@@ -90,5 +92,58 @@ impl Electrode for MissedBlocks {
         );
         self.last_missed_blocks = Some(state.missed_blocks);
         false
+    }
+}
+
+#[derive(Default, Debug)]
+pub(crate) struct Jailed {
+    last_jailed_until: Option<DateTime<Utc>>,
+}
+
+impl Electrode for Jailed {
+    fn warm_up(&mut self, state: &ClientState) {
+        log::debug!("warmed up jailed ({})", state.jailed_until);
+        self.last_jailed_until = Some(state.jailed_until);
+    }
+
+    fn measure(&mut self, state: &ClientState) -> bool {
+        let last_jailed_until = match self.last_jailed_until {
+            Some(last_jailed_until) => last_jailed_until,
+            None => {
+                log::error!("missed blocks was not initialized");
+                return false;
+            }
+        };
+
+        if state.jailed_until > last_jailed_until {
+            self.last_jailed_until = Some(state.jailed_until);
+        }
+
+        let now = Utc::now();
+
+        if state.jailed_until < now {
+            log::debug!("jailed ok (not jailed since {})", state.jailed_until);
+            return true;
+        }
+
+        log::warn!("jailed not ok (jailed until {})", state.jailed_until);
+        false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use chrono::{self, DateTime, Utc};
+
+    #[test]
+    fn compare_block_time() {
+        let time1 = "2022-08-01T16:18:53.169944174Z";
+        let time2 = "2023-08-01T16:18:53.169944174Z";
+        let parsed1: DateTime<Utc> = chrono::DateTime::from_str(time1).unwrap();
+        let parsed2: DateTime<Utc> = chrono::DateTime::from_str(time2).unwrap();
+        assert!(parsed1 < parsed2);
+        assert_ne!(parsed1, parsed2);
     }
 }

@@ -9,6 +9,8 @@ pub(crate) enum ClientError {
     InvalidResponse(#[from] std::io::Error),
     #[error("couldn't fetch with client: {0}")]
     FetchError(#[from] reqwest::Error),
+    #[error("couldn't parse block timestamp: {0}")]
+    TimestampError(#[from] chrono::ParseError),
 }
 
 #[derive(Error, Debug)]

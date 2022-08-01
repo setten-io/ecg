@@ -1,6 +1,7 @@
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use reqwest::header;
 
 use super::{Client, ClientState};
@@ -84,9 +85,11 @@ impl Client for Lcd {
         let block = self.fetch_block().await?;
         let signing_infos = self.fetch_signing_infos().await?;
         log::debug!("fetched state for {} at {}", self.valcons_addr, self.url);
+        let jailed_until: DateTime<Utc> =
+            DateTime::from_str(&signing_infos.val_signing_info.jailed_until)?;
         Ok(ClientState {
             height: block.block.header.height,
-            _jailed: signing_infos.val_signing_info.jailed_until,
+            jailed_until,
             tombstoned: signing_infos.val_signing_info.tombstoned,
             missed_blocks: signing_infos.val_signing_info.missed_blocks_counter,
         })
@@ -124,5 +127,20 @@ mod response {
         pub(crate) tombstoned: bool,
         #[serde(deserialize_with = "deserialize_number_from_string")]
         pub(crate) missed_blocks_counter: u64,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use chrono::{self, DateTime, Utc};
+
+    #[test]
+    fn parse_block_time() {
+        let time = "2022-08-01T16:18:53.169944174Z";
+        let parsed: DateTime<Utc> = chrono::DateTime::from_str(time).unwrap();
+        assert_eq!(parsed.offset(), &Utc);
+        assert_eq!(format!("{:?}", parsed), time);
     }
 }

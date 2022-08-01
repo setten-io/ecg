@@ -81,6 +81,7 @@ fn start_heart(name: String, target: TargetConfig, http: reqwest::Client) -> Hea
 
     let electrodes: Vec<Box<dyn electrode::Electrode>> = vec![
         Box::new(electrode::BlockHeight::default()),
+        Box::new(electrode::Jailed::default()),
         Box::new(electrode::Tombstoned::default()),
         Box::new(electrode::MissedBlocks::default()),
     ];
