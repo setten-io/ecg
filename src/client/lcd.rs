@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use async_trait::async_trait;
+use reqwest::header;
 
 use super::{Client, ClientState};
 use crate::error::ClientResult;
@@ -11,6 +14,47 @@ pub(crate) struct Lcd {
 
 impl Lcd {
     pub(crate) fn new(http: reqwest::Client, url: String, valcons_addr: String) -> Self {
+        Self {
+            http,
+            url,
+            valcons_addr,
+        }
+    }
+
+    pub(crate) fn new_setten(
+        project_id: String,
+        key: String,
+        network: String,
+        blockchain: String,
+        valcons_addr: String,
+    ) -> Self {
+        let url = format!(
+            "https://lcd.{}.{}.setten.io/{}",
+            network, blockchain, project_id
+        );
+
+        let mut headers = header::HeaderMap::new();
+        let key_header_value = match format!("Bearer {}", key).parse() {
+            Ok(header_value) => header_value,
+            Err(e) => {
+                log::error!("incorrect http header value: {}", e);
+                std::process::exit(1)
+            }
+        };
+        headers.insert(header::AUTHORIZATION, key_header_value);
+
+        let http = match reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .default_headers(headers)
+            .build()
+        {
+            Ok(http) => http,
+            Err(e) => {
+                log::error!("couldn't build http client: {}", e);
+                std::process::exit(1)
+            }
+        };
+
         Self {
             http,
             url,

@@ -62,6 +62,18 @@ fn start_heart(name: String, target: TargetConfig, http: reqwest::Client) -> Hea
                 config::ClientsConfig::Lcd { url } => {
                     Box::new(Lcd::new(http.clone(), url, target.valcons_address.clone()))
                 }
+                config::ClientsConfig::SettenLcd {
+                    project_id,
+                    key,
+                    network,
+                    blockchain,
+                } => Box::new(Lcd::new_setten(
+                    project_id,
+                    key,
+                    network,
+                    blockchain,
+                    target.valcons_address.clone(),
+                )),
             };
             client
         })
