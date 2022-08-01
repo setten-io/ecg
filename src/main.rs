@@ -91,7 +91,7 @@ fn start_heart(name: String, target: TargetConfig, http: reqwest::Client) -> Hea
         http.clone(),
         target.url.clone(),
         electrodes,
-        target.interval,
+        target.interval.unwrap_or(30),
     )
 }
 

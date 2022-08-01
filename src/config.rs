@@ -19,7 +19,7 @@ pub(crate) struct Config {
 pub(crate) struct TargetConfig {
     pub(crate) url: String,
     pub(crate) valcons_address: String,
-    pub(crate) interval: u64,
+    pub(crate) interval: Option<u64>,
     pub(crate) clients: Vec<ClientsConfig>,
 }
 
