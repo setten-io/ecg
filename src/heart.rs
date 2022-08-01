@@ -5,6 +5,7 @@ use tokio::time::{sleep, Duration};
 
 use crate::client::{Client, ClientState};
 use crate::electrode::Electrode;
+use crate::error::ClientResult;
 
 pub(crate) struct Heart {
     name: String,
@@ -89,14 +90,19 @@ impl Heart {
 
         states
             .into_iter()
-            .filter_map(|s| s.ok())
+            .inspect(|s| {
+                if let Err(e) = s {
+                    log::warn!("[{}] {}", self.name, e)
+                }
+            })
+            .filter_map(ClientResult::ok)
             .into_iter()
             .min_by_key(|s| s.height)
     }
 
     async fn beat(&self) {
         if let Err(e) = self.http.get(&self.heartbeat_url).send().await {
-            log::error!("[{}] couldn't beat: {}", self.name, e);
+            log::error!("[{}] couldn't beat: {}", self.name, e)
         }
     }
 }
