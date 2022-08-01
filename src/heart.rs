@@ -1,13 +1,16 @@
 use std::convert::identity;
-use std::thread::sleep;
-use std::time::Duration;
 
+use futures::{future, stream, StreamExt};
+use tokio::time::{sleep, Duration};
+
+use crate::client::{Client, ClientState};
 use crate::electrode::Electrode;
-use crate::lcd;
+use crate::error::ClientResult;
 
 pub(crate) struct Heart {
-    lcd: lcd::Client,
-    http: ureq::Agent,
+    name: String,
+    clients: Vec<Box<dyn Client>>,
+    http: reqwest::Client,
     heartbeat_url: String,
     electrodes: Vec<Box<dyn Electrode>>,
     interval: Duration,
@@ -15,14 +18,16 @@ pub(crate) struct Heart {
 
 impl Heart {
     pub(crate) fn new(
-        lcd: lcd::Client,
-        http: ureq::Agent,
+        name: String,
+        clients: Vec<Box<dyn Client>>,
+        http: reqwest::Client,
         heartbeat_url: String,
         electrodes: Vec<Box<dyn Electrode>>,
         interval: u64,
     ) -> Self {
         Self {
-            lcd,
+            name,
+            clients,
             http,
             interval: Duration::from_secs(interval),
             heartbeat_url,
@@ -30,44 +35,74 @@ impl Heart {
         }
     }
 
-    pub(crate) fn start(&mut self) {
-        log::info!("warming up");
-        self.check();
+    pub(crate) async fn start(&mut self) {
+        log::info!("[{}] warming up", self.name);
+        self.warm_up().await;
         loop {
-            log::debug!("sleeping {:?}", self.interval);
-            sleep(self.interval);
-            let result = self.check();
+            log::debug!("[{}] sleeping {:?}", self.name, self.interval);
+            sleep(self.interval).await;
+            let result = self.check().await;
             if result {
-                log::info!("beating");
-                self.beat();
+                log::info!("[{}] beating", self.name);
+                self.beat().await;
                 continue;
             }
-            log::warn!("not beating");
+            log::warn!("[{}] not beating", self.name);
         }
     }
 
-    fn check(&mut self) -> bool {
-        log::debug!("running all checks");
-        let state = match self.lcd.fetch() {
-            Ok(state) => state,
-            Err(e) => {
-                log::error!("{}", e);
+    async fn warm_up(&mut self) {
+        let state = match self.fresh_state().await {
+            Some(state) => state,
+            None => {
+                log::error!("[{}] no state to warm up on", self.name);
+                std::process::exit(1)
+            }
+        };
+
+        stream::iter(&mut self.electrodes)
+            .for_each(|e| async { e.warm_up(&state) })
+            .await;
+    }
+
+    async fn check(&mut self) -> bool {
+        let state = match self.fresh_state().await {
+            Some(state) => state,
+            None => {
+                log::error!("[{}] no state found", self.name);
                 return false;
             }
         };
-        self.electrodes
-            .iter_mut()
-            .map(|e| e.measure(state.clone()))
-            // needed to ensure ALL "measures" are run
-            // `all` stopes consuming at the first `false`
+
+        log::debug!("[{}] running all checks", self.name);
+        stream::iter(&mut self.electrodes)
+            .map(|e| e.measure(&state))
             .collect::<Vec<bool>>()
+            .await
             .into_iter()
             .all(identity)
     }
 
-    fn beat(&self) {
-        if let Err(e) = self.http.get(&self.heartbeat_url).call() {
-            log::error!("couldn't beat: {}", e);
+    /// Get state from each client and return the freshest one (highest block height)
+    async fn fresh_state(&self) -> Option<ClientState> {
+        let states_futures: Vec<_> = self.clients.iter().map(|c| c.fetch()).collect();
+        let states = future::join_all(states_futures).await;
+
+        states
+            .into_iter()
+            .inspect(|s| {
+                if let Err(e) = s {
+                    log::warn!("[{}] {}", self.name, e)
+                }
+            })
+            .filter_map(ClientResult::ok)
+            .into_iter()
+            .min_by_key(|s| s.height)
+    }
+
+    async fn beat(&self) {
+        if let Err(e) = self.http.get(&self.heartbeat_url).send().await {
+            log::error!("[{}] couldn't beat: {}", self.name, e)
         }
     }
 }
