@@ -1,10 +1,11 @@
-FROM rust:buster as builder
+FROM rust:alpine as builder
 WORKDIR /build
 COPY Cargo.* ./
 COPY src ./src
-RUN cargo install --path .
+RUN apk add --no-cache musl-dev \
+    && cargo build --release
 
-FROM debian:buster-slim
+FROM alpine:latest
 LABEL org.opencontainers.image.source https://github.com/setten-io/ecg
-COPY --from=builder /usr/local/cargo/bin/ecg /usr/local/bin/ecg
+COPY --from=builder /build/target/release/ecg /usr/local/bin/ecg
 ENTRYPOINT ["ecg"]
