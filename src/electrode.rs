@@ -3,8 +3,8 @@ use chrono::{DateTime, Utc};
 use crate::client::ClientState;
 
 pub(crate) trait Electrode {
-    fn warm_up(&mut self, state: &ClientState);
-    fn measure(&mut self, state: &ClientState) -> bool;
+    fn warm_up(&mut self, name: &str, state: &ClientState);
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool;
 }
 
 #[derive(Default, Debug)]
@@ -13,23 +13,24 @@ pub(crate) struct BlockHeight {
 }
 
 impl Electrode for BlockHeight {
-    fn warm_up(&mut self, state: &ClientState) {
-        log::debug!("warmed up block height ({})", state.height);
+    fn warm_up(&mut self, name: &str, state: &ClientState) {
+        log::debug!("[{}] warmed up block height ({})", name, state.height);
         self.last_height = Some(state.height);
     }
 
-    fn measure(&mut self, state: &ClientState) -> bool {
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
         let last_height = match self.last_height {
             Some(last_height) => last_height,
             None => {
-                log::error!("block height was not initialized");
+                log::error!("[{}] block height was not initialized", name);
                 return false;
             }
         };
 
         if state.height > last_height {
             log::debug!(
-                "block height ok ({} +{})",
+                "[{}] block height ok ({} +{})",
+                name,
                 state.height,
                 state.height - last_height
             );
@@ -37,7 +38,7 @@ impl Electrode for BlockHeight {
             return true;
         }
 
-        log::warn!("block height not ok ({})", last_height);
+        log::warn!("[{}] block height not ok ({})", name, last_height);
         false
     }
 }
@@ -46,15 +47,15 @@ impl Electrode for BlockHeight {
 pub(crate) struct Tombstoned {}
 
 impl Electrode for Tombstoned {
-    fn warm_up(&mut self, _: &ClientState) {
-        log::debug!("warmed up tombstoned (nothing to do)");
+    fn warm_up(&mut self, name: &str, _: &ClientState) {
+        log::debug!("[{}] warmed up tombstoned (nothing to do)", name);
     }
 
-    fn measure(&mut self, state: &ClientState) -> bool {
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
         let res = !state.tombstoned;
         match res {
-            true => log::debug!("tombstoned ok (not tombstoned)"),
-            false => log::warn!("tombstoned not ok (tombstoned)"),
+            true => log::debug!("[{}] tombstoned ok (not tombstoned)", name),
+            false => log::warn!("[{}] tombstoned not ok (tombstoned)", name),
         }
         res
     }
@@ -66,27 +67,32 @@ pub(crate) struct MissedBlocks {
 }
 
 impl Electrode for MissedBlocks {
-    fn warm_up(&mut self, state: &ClientState) {
-        log::debug!("warmed up missed blocks ({})", state.missed_blocks);
+    fn warm_up(&mut self, name: &str, state: &ClientState) {
+        log::debug!(
+            "[{}] warmed up missed blocks ({})",
+            name,
+            state.missed_blocks
+        );
         self.last_missed_blocks = Some(state.missed_blocks);
     }
 
-    fn measure(&mut self, state: &ClientState) -> bool {
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
         let last_missed_blocks = match self.last_missed_blocks {
             Some(last_missed_blocks) => last_missed_blocks,
             None => {
-                log::error!("missed blocks was not initialized");
+                log::error!("[{}] missed blocks was not initialized", name);
                 return false;
             }
         };
 
         if state.missed_blocks <= last_missed_blocks {
-            log::debug!("missed blocks ok ({})", state.missed_blocks);
+            log::debug!("[{}] missed blocks ok ({})", name, state.missed_blocks);
             return true;
         }
 
         log::warn!(
-            "missed blocks not ok ({} +{})",
+            "[{}] missed blocks not ok ({} +{})",
+            name,
             state.missed_blocks,
             state.missed_blocks - last_missed_blocks
         );
@@ -101,16 +107,16 @@ pub(crate) struct Jailed {
 }
 
 impl Electrode for Jailed {
-    fn warm_up(&mut self, state: &ClientState) {
-        log::debug!("warmed up jailed ({})", state.jailed_until);
+    fn warm_up(&mut self, name: &str, state: &ClientState) {
+        log::debug!("[{}] warmed up jailed ({})", name, state.jailed_until);
         self.last_jailed_until = Some(state.jailed_until);
     }
 
-    fn measure(&mut self, state: &ClientState) -> bool {
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
         let last_jailed_until = match self.last_jailed_until {
             Some(last_jailed_until) => last_jailed_until,
             None => {
-                log::error!("missed blocks was not initialized");
+                log::error!("[{}] missed blocks was not initialized", name);
                 return false;
             }
         };
@@ -122,11 +128,19 @@ impl Electrode for Jailed {
         let now = Utc::now();
 
         if state.jailed_until < now {
-            log::debug!("jailed ok (not jailed since {})", state.jailed_until);
+            log::debug!(
+                "[{}] jailed ok (not jailed since {})",
+                name,
+                state.jailed_until
+            );
             return true;
         }
 
-        log::warn!("jailed not ok (jailed until {})", state.jailed_until);
+        log::warn!(
+            "[{}] jailed not ok (jailed until {})",
+            name,
+            state.jailed_until
+        );
         false
     }
 }

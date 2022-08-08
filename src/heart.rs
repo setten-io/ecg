@@ -61,7 +61,7 @@ impl Heart {
         };
 
         stream::iter(&mut self.electrodes)
-            .for_each(|e| async { e.warm_up(&state) })
+            .for_each(|e| async { e.warm_up(&self.name, &state) })
             .await;
     }
 
@@ -76,7 +76,7 @@ impl Heart {
 
         log::debug!("[{}] running all checks", self.name);
         stream::iter(&mut self.electrodes)
-            .map(|e| e.measure(&state))
+            .map(|e| e.measure(&self.name, &state))
             .collect::<Vec<bool>>()
             .await
             .into_iter()
