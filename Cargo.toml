@@ -22,6 +22,10 @@ serde-aux = "3.0"
 serde_yaml = "0.9"
 thiserror = "1.0"
 
+[dependencies.openssl]
+features = ["vendored"]
+version = "0.10"
+
 [dependencies.reqwest]
 features = ["json"]
 version = "0.11"
