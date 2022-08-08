@@ -1,7 +1,10 @@
-use crate::lcd;
+use chrono::{DateTime, Utc};
+
+use crate::client::ClientState;
 
 pub(crate) trait Electrode {
-    fn measure(&mut self, state: lcd::State) -> bool;
+    fn warm_up(&mut self, name: &str, state: &ClientState);
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool;
 }
 
 #[derive(Default, Debug)]
@@ -10,22 +13,32 @@ pub(crate) struct BlockHeight {
 }
 
 impl Electrode for BlockHeight {
-    fn measure(&mut self, state: lcd::State) -> bool {
-        let height = state.block.block.header.height;
+    fn warm_up(&mut self, name: &str, state: &ClientState) {
+        log::debug!("[{}] warmed up block height ({})", name, state.height);
+        self.last_height = Some(state.height);
+    }
+
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
         let last_height = match self.last_height {
             Some(last_height) => last_height,
             None => {
-                log::debug!("warmed up block height ({})", height);
-                self.last_height = Some(height);
+                log::error!("[{}] block height was not initialized", name);
                 return false;
             }
         };
-        if height > last_height {
-            log::debug!("block height ok ({} +{})", height, height - last_height);
-            self.last_height = Some(height);
+
+        if state.height > last_height {
+            log::debug!(
+                "[{}] block height ok ({} +{})",
+                name,
+                state.height,
+                state.height - last_height
+            );
+            self.last_height = Some(state.height);
             return true;
         }
-        log::warn!("block height not ok ({})", last_height);
+
+        log::warn!("[{}] block height not ok ({})", name, last_height);
         false
     }
 }
@@ -34,11 +47,15 @@ impl Electrode for BlockHeight {
 pub(crate) struct Tombstoned {}
 
 impl Electrode for Tombstoned {
-    fn measure(&mut self, state: lcd::State) -> bool {
-        let res = !state.signing_infos.val_signing_info.tombstoned;
+    fn warm_up(&mut self, name: &str, _: &ClientState) {
+        log::debug!("[{}] warmed up tombstoned (nothing to do)", name);
+    }
+
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
+        let res = !state.tombstoned;
         match res {
-            true => log::debug!("tombstoned ok (not tombstoned)"),
-            false => log::warn!("tombstoned not ok (tombstoned)"),
+            true => log::debug!("[{}] tombstoned ok (not tombstoned)", name),
+            false => log::warn!("[{}] tombstoned not ok (tombstoned)", name),
         }
         res
     }
@@ -50,26 +67,97 @@ pub(crate) struct MissedBlocks {
 }
 
 impl Electrode for MissedBlocks {
-    fn measure(&mut self, state: lcd::State) -> bool {
-        let missed_blocks = state.signing_infos.val_signing_info.missed_blocks_counter;
+    fn warm_up(&mut self, name: &str, state: &ClientState) {
+        log::debug!(
+            "[{}] warmed up missed blocks ({})",
+            name,
+            state.missed_blocks
+        );
+        self.last_missed_blocks = Some(state.missed_blocks);
+    }
+
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
         let last_missed_blocks = match self.last_missed_blocks {
             Some(last_missed_blocks) => last_missed_blocks,
             None => {
-                log::debug!("warmed up missed blocks ({})", missed_blocks);
-                self.last_missed_blocks = Some(missed_blocks);
+                log::error!("[{}] missed blocks was not initialized", name);
                 return false;
             }
         };
-        if missed_blocks <= last_missed_blocks {
-            log::debug!("missed blocks ok ({})", missed_blocks);
+
+        if state.missed_blocks <= last_missed_blocks {
+            log::debug!("[{}] missed blocks ok ({})", name, state.missed_blocks);
             return true;
         }
+
         log::warn!(
-            "missed blocks not ok ({} +{})",
-            missed_blocks,
-            missed_blocks - last_missed_blocks
+            "[{}] missed blocks not ok ({} +{})",
+            name,
+            state.missed_blocks,
+            state.missed_blocks - last_missed_blocks
         );
-        self.last_missed_blocks = Some(missed_blocks);
+        self.last_missed_blocks = Some(state.missed_blocks);
         false
+    }
+}
+
+#[derive(Default, Debug)]
+pub(crate) struct Jailed {
+    last_jailed_until: Option<DateTime<Utc>>,
+}
+
+impl Electrode for Jailed {
+    fn warm_up(&mut self, name: &str, state: &ClientState) {
+        log::debug!("[{}] warmed up jailed ({})", name, state.jailed_until);
+        self.last_jailed_until = Some(state.jailed_until);
+    }
+
+    fn measure(&mut self, name: &str, state: &ClientState) -> bool {
+        let last_jailed_until = match self.last_jailed_until {
+            Some(last_jailed_until) => last_jailed_until,
+            None => {
+                log::error!("[{}] missed blocks was not initialized", name);
+                return false;
+            }
+        };
+
+        if state.jailed_until > last_jailed_until {
+            self.last_jailed_until = Some(state.jailed_until);
+        }
+
+        let now = Utc::now();
+
+        if state.jailed_until < now {
+            log::debug!(
+                "[{}] jailed ok (not jailed since {})",
+                name,
+                state.jailed_until
+            );
+            return true;
+        }
+
+        log::warn!(
+            "[{}] jailed not ok (jailed until {})",
+            name,
+            state.jailed_until
+        );
+        false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use chrono::{self, DateTime, Utc};
+
+    #[test]
+    fn compare_block_time() {
+        let time1 = "2022-08-01T16:18:53.169944174Z";
+        let time2 = "2023-08-01T16:18:53.169944174Z";
+        let parsed1: DateTime<Utc> = chrono::DateTime::from_str(time1).unwrap();
+        let parsed2: DateTime<Utc> = chrono::DateTime::from_str(time2).unwrap();
+        assert!(parsed1 < parsed2);
+        assert_ne!(parsed1, parsed2);
     }
 }

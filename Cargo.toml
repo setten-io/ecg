@@ -1,22 +1,34 @@
 [package]
-name = "ecg"
-description = "Heartbeats for cosmos validators"
-version = "0.1.2"
 edition = "2021"
-authors = ["Etienne Napoleone <etienne@setten.io>"]
-license = "GPL-3.0-or-later"
+name = "ecg"
+version = "1.0.0"
 
+authors = ["Etienne Napoleone <etienne@setten.io>"]
+categories = ["command-line-utilities"]
+description = "Heartbeats for cosmos validators"
 documentation = "https://github.com/setten-io/ecg/blob/main/README.md"
+keywords = ["monitoring", "validator", "cosmos", "heartbeat", "uptime"]
+license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/setten-io/ecg"
-keywords = ["monitoring", "validator", "cosmos", "heartbeat", "uptime"]
-categories = ["command-line-utilities"]
 
 [dependencies]
-thiserror = "1.0"
-serde-aux = "3.0"
+async-trait = "0.1"
+chrono = "0.4"
+futures = "0.3"
 log = "0.4"
 pretty_env_logger = "0.4"
+serde-aux = "3.0"
+serde_yaml = "0.9"
+thiserror = "1.0"
+
+[dependencies.reqwest]
+features = ["json"]
+version = "0.11"
+
+[dependencies.tokio]
+features = ["full"]
+version = "1"
 
 [dependencies.serde]
 features = ["derive"]
@@ -26,10 +38,9 @@ version = "1.0"
 features = ["derive", "env"]
 version = "3.2"
 
-[dependencies.ureq]
-features = ["json"]
-version = "2.4"
-
 [dependencies.ctrlc]
 features = ["termination"]
 version = "3.2"
+
+[dev-dependencies]
+indoc = "1.0"

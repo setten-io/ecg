@@ -1,4 +1,4 @@
-FROM rust:slim as builder
+FROM rust:buster as builder
 WORKDIR /build
 COPY Cargo.* ./
 COPY src ./src
