@@ -15,5 +15,5 @@ pub(crate) struct ClientState {
 
 #[async_trait]
 pub(crate) trait Client {
-    async fn fetch(&self) -> ClientResult<ClientState>;
+    async fn fetch(&self, name: &str) -> ClientResult<ClientState>;
 }

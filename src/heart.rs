@@ -85,7 +85,7 @@ impl Heart {
 
     /// Get state from each client and return the freshest one (highest block height)
     async fn fresh_state(&self) -> Option<ClientState> {
-        let states_futures: Vec<_> = self.clients.iter().map(|c| c.fetch()).collect();
+        let states_futures: Vec<_> = self.clients.iter().map(|c| c.fetch(&self.name)).collect();
         let states = future::join_all(states_futures).await;
 
         states
