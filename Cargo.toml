@@ -1,26 +1,26 @@
 [package]
-name = "ecg"
-description = "Heartbeats for cosmos validators"
-version = "0.1.2"
 edition = "2021"
-authors = ["Etienne Napoleone <etienne@setten.io>"]
-license = "GPL-3.0-or-later"
+name = "ecg"
+version = "0.1.2"
 
+authors = ["Etienne Napoleone <etienne@setten.io>"]
+categories = ["command-line-utilities"]
+description = "Heartbeats for cosmos validators"
 documentation = "https://github.com/setten-io/ecg/blob/main/README.md"
+keywords = ["monitoring", "validator", "cosmos", "heartbeat", "uptime"]
+license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/setten-io/ecg"
-keywords = ["monitoring", "validator", "cosmos", "heartbeat", "uptime"]
-categories = ["command-line-utilities"]
 
 [dependencies]
-thiserror = "1.0"
-serde-aux = "3.0"
-serde_yaml = "0.9"
+async-trait = "0.1"
+chrono = "0.4"
+futures = "0.3"
 log = "0.4"
 pretty_env_logger = "0.4"
-async-trait = "0.1"
-futures = "0.3"
-chrono = "0.4"
+serde-aux = "3.0"
+serde_yaml = "0.9"
+thiserror = "1.0"
 
 [dependencies.reqwest]
 features = ["json"]
