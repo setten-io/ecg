@@ -61,7 +61,7 @@ impl Heart {
         };
 
         stream::iter(&mut self.electrodes)
-            .for_each(|e| async { e.warm_up(&state) })
+            .for_each(|e| async { e.warm_up(&self.name, &state) })
             .await;
     }
 
@@ -76,7 +76,7 @@ impl Heart {
 
         log::debug!("[{}] running all checks", self.name);
         stream::iter(&mut self.electrodes)
-            .map(|e| e.measure(&state))
+            .map(|e| e.measure(&self.name, &state))
             .collect::<Vec<bool>>()
             .await
             .into_iter()
@@ -85,7 +85,7 @@ impl Heart {
 
     /// Get state from each client and return the freshest one (highest block height)
     async fn fresh_state(&self) -> Option<ClientState> {
-        let states_futures: Vec<_> = self.clients.iter().map(|c| c.fetch()).collect();
+        let states_futures: Vec<_> = self.clients.iter().map(|c| c.fetch(&self.name)).collect();
         let states = future::join_all(states_futures).await;
 
         states

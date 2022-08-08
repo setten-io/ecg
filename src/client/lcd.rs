@@ -81,10 +81,15 @@ impl Lcd {
 
 #[async_trait]
 impl Client for Lcd {
-    async fn fetch(&self) -> ClientResult<ClientState> {
+    async fn fetch(&self, name: &str) -> ClientResult<ClientState> {
         let block = self.fetch_block().await?;
         let signing_infos = self.fetch_signing_infos().await?;
-        log::debug!("fetched state for {} at {}", self.valcons_addr, self.url);
+        log::debug!(
+            "[{}] fetched state for {} at {}",
+            name,
+            self.valcons_addr,
+            self.url
+        );
         let jailed_until: DateTime<Utc> =
             DateTime::from_str(&signing_infos.val_signing_info.jailed_until)?;
         Ok(ClientState {
