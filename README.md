@@ -7,7 +7,7 @@
 [![Crate](https://img.shields.io/crates/v/ecg)](https://crates.io/crates/ecg)
 [![License](https://img.shields.io/github/license/setten-io/ecg?no-cache)](https://github.com/setten-io/ecg/blob/main/LICENSE)
 
-`ecg` is a cosmos validator [Dead Man's Switch](https://en.wikipedia.org/wiki/Dead_man%27s_switch).
+`ecg` is a cosmos validators [Dead Man's Switch](https://en.wikipedia.org/wiki/Dead_man%27s_switch).
 
 ---
 

@@ -155,7 +155,7 @@ dependencies = [
 
 [[package]]
 name = "ecg"
-version = "0.1.2"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
