@@ -5,7 +5,7 @@ use crate::error::ClientResult;
 
 pub(crate) mod lcd;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct ClientState {
     pub(crate) height: u64,
     pub(crate) jailed_until: DateTime<Utc>,
