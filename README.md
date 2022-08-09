@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/26155267/179846683-a5e09b59-7344-4b88-be20-4b2a0fa0f610.png" alt="ecg"></img>
+  <img src="https://user-images.githubusercontent.com/26155267/183662242-e463b043-c58f-449b-a9fb-0130ee8bb57d.png" alt="ecg"></img>
 </p>
 
 [![Integration](https://github.com/setten-io/ecg/actions/workflows/integration.yaml/badge.svg)](https://github.com/setten-io/ecg/actions/workflows/integration.yaml)
