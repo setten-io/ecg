@@ -110,3 +110,39 @@ impl Heart {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::Utc;
+    use reqwest::Client;
+
+    use super::*;
+
+    #[test]
+    fn filter_state_keep_state_with_highest_block() {
+        let client = Client::new();
+        let heart = Heart::new(
+            "test".into(),
+            vec![],
+            client,
+            "https://test.com".into(),
+            vec![],
+            10,
+        );
+
+        let states = vec![10, 1000, 100]
+            .into_iter()
+            .map(|h| ClientState {
+                height: h,
+                jailed_until: Utc::now(),
+                tombstoned: false,
+                missed_blocks: 0,
+            })
+            .map(Ok)
+            .collect::<Vec<_>>();
+
+        let state = heart.freshest_state(states).unwrap();
+
+        assert_eq!(state.height, 1000)
+    }
+}
