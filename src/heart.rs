@@ -97,7 +97,7 @@ impl Heart {
             })
             .filter_map(ClientResult::ok)
             .into_iter()
-            .min_by_key(|s| s.height)
+            .max_by_key(|s| s.height)
     }
 
     async fn beat(&self) {
