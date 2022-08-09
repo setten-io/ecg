@@ -52,7 +52,8 @@ impl Heart {
     }
 
     async fn warm_up(&mut self) {
-        let state = match self.fresh_state().await {
+        let states = self.get_states().await;
+        let state = match self.freshest_state(states) {
             Some(state) => state,
             None => {
                 log::error!("[{}] no state to warm up on", self.name);
@@ -66,7 +67,8 @@ impl Heart {
     }
 
     async fn check(&mut self) -> bool {
-        let state = match self.fresh_state().await {
+        let states = self.get_states().await;
+        let state = match self.freshest_state(states) {
             Some(state) => state,
             None => {
                 log::error!("[{}] no state found", self.name);
@@ -77,26 +79,28 @@ impl Heart {
         log::debug!("[{}] running all checks", self.name);
         stream::iter(&mut self.electrodes)
             .map(|e| e.measure(&self.name, &state))
+            // collect is needed to run over all checks
+            // because `all()` will stop on first `false`
             .collect::<Vec<bool>>()
             .await
             .into_iter()
             .all(identity)
     }
 
-    /// Get state from each client and return the freshest one (highest block height)
-    async fn fresh_state(&self) -> Option<ClientState> {
+    async fn get_states(&self) -> Vec<ClientResult<ClientState>> {
         let states_futures: Vec<_> = self.clients.iter().map(|c| c.fetch(&self.name)).collect();
-        let states = future::join_all(states_futures).await;
+        future::join_all(states_futures).await
+    }
 
+    /// Filter the freshest state (highest block height)
+    fn freshest_state(&self, states: Vec<ClientResult<ClientState>>) -> Option<ClientState> {
         states
             .into_iter()
-            .inspect(|s| {
-                if let Err(e) = s {
-                    log::warn!("[{}] {}", self.name, e)
-                }
+            .inspect(|s| match s {
+                Ok(state) => log::trace!("[{}] {:?}", self.name, state),
+                Err(e) => log::warn!("[{}] {}", self.name, e),
             })
             .filter_map(ClientResult::ok)
-            .into_iter()
             .max_by_key(|s| s.height)
     }
 
