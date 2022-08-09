@@ -1,11 +1,11 @@
 [package]
 edition = "2021"
 name = "ecg"
-version = "1.0.2"
+version = "1.0.3"
 
 authors = ["Etienne Napoleone <etienne@setten.io>"]
 categories = ["command-line-utilities"]
-description = "Heartbeats for cosmos validators"
+description = "Cosmos validators dead man's switch"
 documentation = "https://github.com/setten-io/ecg/blob/main/README.md"
 keywords = ["monitoring", "validator", "cosmos", "heartbeat", "uptime"]
 license = "GPL-3.0-or-later"
