@@ -27,7 +27,7 @@ Examples:
 > Ecg and heartbeat style monitoring are complementary to other monitoring tools and methods.
 > We recommend ecg as an aditional failsafe alongside more proactive tools.
 
-There are multiple SaaS platforms like [Better Uptime](https://betteruptime.com) or [Dead Man's Snitch](https://deadmanssnitch.com) that implement heatbeat monitoring.
+There are multiple SaaS platforms like [Better Uptime](https://betteruptime.com) or [Dead Man's Snitch](https://deadmanssnitch.com) that implement heartbeat monitoring.
 
 ## Features
 
