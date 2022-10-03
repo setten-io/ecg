@@ -37,7 +37,7 @@ version = "1.0"
 
 [dependencies.clap]
 features = ["derive", "env"]
-version = "3.2"
+version = "4.0"
 
 [dependencies.ctrlc]
 features = ["termination"]
