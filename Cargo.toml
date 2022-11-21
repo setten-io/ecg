@@ -18,7 +18,7 @@ chrono = "0.4"
 futures = "0.3"
 log = "0.4"
 pretty_env_logger = "0.4"
-serde-aux = "3.0"
+serde-aux = "4.1"
 serde_yaml = "0.9"
 thiserror = "1.0"
 
